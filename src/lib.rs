@@ -9,6 +9,7 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 
 use commands::*;
+use guild::get_or_init_sqguild;
 use guild::SQGuild;
 
 mod commands;
@@ -28,7 +29,7 @@ impl EventHandler for Handler {
         if msg.author.id == ctx.cache.current_user_id() {
             return;
         }
-        let arc = guild::get_or_init_sqguild(&ctx.data, &msg.guild_id.unwrap()).await;
+        let arc = get_or_init_sqguild(&ctx.data, &msg.guild_id.unwrap()).await;
         let mut guild = arc.write().await;
         guild.message_count += 1;
         println!("Author: {:?}", msg.author.id);
@@ -37,7 +38,6 @@ impl EventHandler for Handler {
                 eprintln!("Error sending message: {:?}", why)
             }
         }
-        ()
     }
 }
 

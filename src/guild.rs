@@ -1,4 +1,4 @@
-use crate::{GuildMap, TypeMap};
+use crate::{async_trait, GuildMap, PContext, TypeMap};
 use serenity::model::id::GuildId;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -11,6 +11,20 @@ pub struct SQGuild {
 impl SQGuild {
     pub fn new() -> Self {
         SQGuild { message_count: 0 }
+    }
+}
+
+#[async_trait]
+pub trait IntoSQGuild<'a> {
+    async fn get_sq_guild(&self) -> Arc<RwLock<SQGuild>>;
+}
+
+#[async_trait]
+impl<'a> IntoSQGuild<'a> for PContext<'a> {
+    async fn get_sq_guild(&self) -> Arc<RwLock<SQGuild>> {
+        let data = &self.discord().data;
+        let guild_id = self.guild_id().expect("Guild ID not present");
+        get_or_init_sqguild(data, &guild_id).await
     }
 }
 

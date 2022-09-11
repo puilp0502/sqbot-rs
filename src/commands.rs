@@ -1,15 +1,16 @@
 use anyhow::Error;
 use serenity::model::prelude::*;
 
-type PContext<'a> = poise::Context<'a, (), Error>;
+use crate::guild::IntoSQGuild;
+
+pub type PContext<'a> = poise::Context<'a, (), Error>;
 
 #[poise::command(slash_command)]
 pub async fn age(
     ctx: PContext<'_>,
     #[description = "Selected user"] user: Option<User>,
 ) -> anyhow::Result<()> {
-    let guild_id = ctx.guild_id().unwrap();
-    let sq_guild = crate::guild::get_or_init_sqguild(&ctx.discord().data, &guild_id).await;
+    let sq_guild = ctx.get_sq_guild().await;
     println!("Guild: {:?}", sq_guild.read().await);
     let u = user.as_ref().unwrap_or_else(|| ctx.author());
     let response = format!("{}'s account was created at {:?}", u.name, u.created_at());
